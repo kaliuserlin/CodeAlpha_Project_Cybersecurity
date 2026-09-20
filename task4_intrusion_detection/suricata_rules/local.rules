@@ -1,0 +1,27 @@
+# =============================================================
+# Custom Suricata Rules - Task 4: Network Intrusion Detection
+# Place this file at /etc/suricata/rules/local.rules
+# and ensure suricata.yaml includes it under rule-files.
+# =============================================================
+
+# --- Reconnaissance ---
+alert icmp any any -> $HOME_NET any (msg:"ICMP Ping Sweep Detected"; itype:8; threshold:type both, track by_src, count 10, seconds 5; sid:1000001; rev:1;)
+
+alert tcp any any -> $HOME_NET any (msg:"Possible Port Scan Detected (SYN)"; flags:S; threshold:type both, track by_src, count 20, seconds 10; sid:1000002; rev:1;)
+
+# --- Denial of Service ---
+alert tcp any any -> $HOME_NET any (msg:"Possible SYN Flood DoS Attempt"; flags:S; threshold:type both, track by_src, count 50, seconds 5; sid:1000003; rev:1;)
+
+# --- Web Attacks ---
+alert http any any -> $HOME_NET any (msg:"Possible SQL Injection Attempt"; content:"union select"; nocase; http_uri; sid:1000004; rev:1;)
+
+alert http any any -> $HOME_NET any (msg:"Possible XSS Attempt"; content:"<script>"; nocase; http_uri; sid:1000005; rev:1;)
+
+alert http any any -> $HOME_NET any (msg:"Directory Traversal Attempt"; content:"../../../"; http_uri; sid:1000006; rev:1;)
+
+# --- Suspicious File Access Attempts ---
+alert http any any -> $HOME_NET any (msg:"Attempt to Access /etc/passwd"; content:"/etc/passwd"; http_uri; sid:1000007; rev:1;)
+
+# --- Suspicious User-Agents (common scanning tools) ---
+alert http any any -> $HOME_NET any (msg:"Scanning Tool User-Agent Detected (nmap/nikto/sqlmap)"; content:"nmap"; http_user_agent; nocase; sid:1000008; rev:1;)
+alert http any any -> $HOME_NET any (msg:"Scanning Tool User-Agent Detected (sqlmap)"; content:"sqlmap"; http_user_agent; nocase; sid:1000009; rev:1;)
